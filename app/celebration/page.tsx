@@ -35,6 +35,12 @@ export default function CelebrationPage() {
 
   const [confetti, setConfetti] = useState<React.JSX.Element[]>([])
   const [uploadedImages, setUploadedImages] = useState<string[]>(Array(6).fill("/placeholder.svg"))
+  const [customText, setCustomText] = useState(
+    "Your love is the sweetest gift I could ever receive. Thank you for being my Valentine and making every day brighter with your presence. Here's to us and our beautiful journey together!",
+  )
+  const [isEditing, setIsEditing] = useState(false)
+  const [customTitle, setCustomTitle] = useState("Yay! Happy Valentine's Day!")
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
 
   useEffect(() => {
     const hearts = ["❤️", "💖", "💕", "💗", "💓", "💘", "💝"]
@@ -43,19 +49,27 @@ export default function CelebrationPage() {
       .map((_, i) => <Confetti key={i} emoji={hearts[Math.floor(Math.random() * hearts.length)]} />)
     setConfetti(newConfetti)
 
-    // Load saved images from local storage
-    const loadSavedImages = () => {
+    // Load saved images and custom text from local storage
+    const loadSavedData = () => {
       try {
         const savedImages = localStorage.getItem("valentineImages")
         if (savedImages) {
           setUploadedImages(JSON.parse(savedImages))
         }
+        const savedText = localStorage.getItem("valentineCustomText")
+        if (savedText) {
+          setCustomText(savedText)
+        }
+        const savedTitle = localStorage.getItem("valentineCustomTitle")
+        if (savedTitle) {
+          setCustomTitle(savedTitle)
+        }
       } catch (error) {
-        console.error("Error loading images from local storage:", error)
+        console.error("Error loading data from local storage:", error)
       }
     }
 
-    loadSavedImages()
+    loadSavedData()
   }, [])
 
   const handleImageClick = (index: number) => {
@@ -80,6 +94,42 @@ export default function CelebrationPage() {
         }
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleTextClick = () => {
+    setIsEditing(true)
+  }
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomText(event.target.value)
+  }
+
+  const handleTextBlur = () => {
+    setIsEditing(false)
+    // Save to local storage
+    try {
+      localStorage.setItem("valentineCustomText", customText)
+    } catch (error) {
+      console.error("Error saving custom text to local storage:", error)
+    }
+  }
+
+  const handleTitleClick = () => {
+    setIsEditingTitle(true)
+  }
+
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomTitle(event.target.value)
+  }
+
+  const handleTitleBlur = () => {
+    setIsEditingTitle(false)
+    // Save to local storage
+    try {
+      localStorage.setItem("valentineCustomTitle", customTitle)
+    } catch (error) {
+      console.error("Error saving custom title to local storage:", error)
     }
   }
 
@@ -137,7 +187,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(0)}
           >
             <Image
-              src={uploadedImages[0] || "/image1.png"}
+              src={uploadedImages[0]}
               alt="Valentine's image 1"
               fill
               className="rounded-full object-cover"
@@ -149,7 +199,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(1)}
           >
             <Image
-              src={uploadedImages[1] || "/image2.png"}
+              src={uploadedImages[1]}
               alt="Valentine's image 2"
               fill
               className="rounded-full object-cover"
@@ -161,7 +211,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(2)}
           >
             <Image
-              src={uploadedImages[2] || "/image3.png"}
+              src={uploadedImages[2]}
               alt="Valentine's image 3"
               fill
               className="rounded-full object-cover"
@@ -173,7 +223,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(3)}
           >
             <Image
-              src={uploadedImages[3] || "/image4.png"}
+              src={uploadedImages[3]}
               alt="Valentine's image 4"
               fill
               className="rounded-full object-cover"
@@ -185,7 +235,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(4)}
           >
             <Image
-              src={uploadedImages[4] || "/image5.png"}
+              src={uploadedImages[4]}
               alt="Valentine's image 5"
               fill
               className="rounded-full object-cover"
@@ -197,7 +247,7 @@ export default function CelebrationPage() {
             onClick={() => handleImageClick(5)}
           >
             <Image
-              src={uploadedImages[5] || "/image6.png"}
+              src={uploadedImages[5]}
               alt="Valentine's image 6"
               fill
               className="rounded-full object-cover"
@@ -205,13 +255,39 @@ export default function CelebrationPage() {
           </div>
 
           <div className="text-center bg-white bg-opacity-70 rounded-3xl p-8 shadow-lg">
-            <h1 className="text-4xl md:text-6xl font-bold text-red-600 mb-8 retro-text-shadow">
-              Yay! Happy Valentine&apos;s Day!
-            </h1>
-            <p className="text-xl md:text-2xl text-red-500 mb-8 max-w-2xl mx-auto">
-              Your love is the sweetest gift I could ever receive. Thank you for being my Valentine and making every day
-              brighter with your presence. Here&apos;s to us and our beautiful journey together!
-            </p>
+            {isEditingTitle ? (
+              <input
+                value={customTitle}
+                onChange={handleTitleChange}
+                onBlur={handleTitleBlur}
+                className="w-full p-2 text-4xl md:text-6xl font-bold text-red-600 mb-8 bg-transparent border-2 border-red-300 rounded-lg focus:outline-none focus:border-red-500 text-center"
+                autoFocus
+              />
+            ) : (
+              <h1
+                className="text-4xl md:text-6xl font-bold text-red-600 mb-8 retro-text-shadow cursor-pointer hover:bg-red-100 rounded-lg p-2 transition-colors duration-200"
+                onClick={handleTitleClick}
+              >
+                {customTitle}
+              </h1>
+            )}
+            {isEditing ? (
+              <textarea
+                value={customText}
+                onChange={handleTextChange}
+                onBlur={handleTextBlur}
+                className="w-full p-2 text-xl md:text-2xl text-red-500 bg-transparent border-2 border-red-300 rounded-lg focus:outline-none focus:border-red-500"
+                rows={5}
+                autoFocus
+              />
+            ) : (
+              <p
+                className="text-xl md:text-2xl text-red-500 mb-8 max-w-2xl mx-auto cursor-pointer hover:bg-red-100 rounded-lg p-2 transition-colors duration-200"
+                onClick={handleTextClick}
+              >
+                {customText}
+              </p>
+            )}
             <div className="pixelated-heart mx-auto animate-bounce" />
           </div>
         </div>
